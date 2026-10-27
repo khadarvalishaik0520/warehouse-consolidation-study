@@ -32,10 +32,16 @@ python3 tests/test_billing.py && python3 tests/test_advisor.py
 
 - `analysis/icde_all134.py` — headline savings, consolidation results, feature correlations, leave-one-out rule, sensitivity table (all 134 groups);
 - `analysis/icde_review2.py` — results without the largest groups; the rule at 3%, 5% and 10% thresholds;
-- `analysis/paper_numbers.py` — as-is timeout comparison, size-model accuracy, top-8 table, rule errors, joint-plan composition;
+- `analysis/paper_numbers.py` — as-is timeout comparison, size-model accuracy, top-8 table, rule errors, joint-plan composition, savings by group size, drivers of the auto-suspend saving, greedy-vs-exhaustive gap and the Proposition 1 test;
 - `sf/validate_f1.py` — billing validation table (model vs Snowflake resume/suspend events);
-- `paper/make_figs.py` — figures 2, 3, 5 and the per-group figure;
+- `paper/make_figs.py` — every figure drawn from the result files (savings, per-group, as-is timeout, overlap, Proposition 1 test);
 - `analysis/case17.py` — the 17-warehouse case study and its figure (needs the Snowset intervals below).
+
+Three further scripts re-derive inputs that `paper_numbers.py` summarises; they need the Snowset intervals:
+
+- `analysis/greedy_gap.py` — greedy vs exhaustive search on the 32 groups of 3-4 warehouses (writes `results/greedy_gap.jsonl`);
+- `analysis/mechanism_test.py` — Proposition 1: realised vs predicted saving of every merged warehouse (writes `results/mechanism.jsonl`);
+- `analysis/counterexample.py` — the idle-pair figure (`python3 analysis/counterexample.py 8858239961191194931`).
 
 `icde27_fleet/analyze_f3.py` and `analyze_f4.py` are the analyses as pre-registered; they restrict comparisons to groups
 where every option is feasible, which the paper corrects (see Deviation 7 in `PREREGISTRATION.md`).

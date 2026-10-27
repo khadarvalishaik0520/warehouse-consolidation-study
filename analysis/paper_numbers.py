@@ -39,3 +39,35 @@ print("== Overlap rule (mean overlap > 0.547) vs pays (> 5%)")
 pays = {d for d in ex if ex[d] > .05}; flag = {d for d in ex if FE[d]["overlap_mean"] > 0.547}
 for name, grp in (("TP", pays & flag), ("FN", pays - flag), ("FP", flag - pays)):
     print("  %s %2d: median extra %.1f%%, median overlap %.2f, median size spread %.1f, share of saving %.1f%%" % (name, len(grp), 100 * st.median(ex[d] for d in grp), st.median(FE[d]["overlap_mean"] for d in grp), st.median(FE[d]["size_spread"] for d in grp), 100 * sum(g[d] for d in grp) / G))
+print("== Savings by group size")
+for lab, f in (("2", lambda k: k == 2), ("3", lambda k: k == 3), ("4-6", lambda k: 4 <= k <= 6), ("7+", lambda k: k >= 7)):
+    G_ = [r for r in A if f(r["warehouses"])]; t = sum(r["asis_600"] for r in G_)
+    print("  k=%-3s groups %3d wh %3d suspend %.1f%% joint %.1f%% consol %.1f%% pays %d median util %.3f" % (lab, len(G_), sum(r["warehouses"] for r in G_),
+          100 * (1 - sum(r["suspend_tuned"] for r in G_) / t), 100 * (1 - sum(r["advisor"] for r in G_) / t),
+          100 * (1 - sum(r["advisor"] for r in G_) / sum(best(r) for r in G_)), sum(1 - r["advisor"] / best(r) > .05 for r in G_),
+          st.median(FE[r["db"]]["util_mean"] for r in G_)))
+def _rank(v):
+    o = sorted(range(len(v)), key=lambda i: v[i]); r = [0.0] * len(v); i = 0
+    while i < len(v):
+        j = i
+        while j + 1 < len(v) and v[o[j + 1]] == v[o[i]]: j += 1
+        for k in range(i, j + 1): r[o[k]] = (i + j) / 2
+        i = j + 1
+    return r
+def _sp(x, y):
+    a, b = _rank(x), _rank(y); ma, mb = st.mean(a), st.mean(b)
+    return sum((p - ma) * (q - mb) for p, q in zip(a, b)) / (sum((p - ma) ** 2 for p in a) * sum((q - mb) ** 2 for q in b)) ** .5
+print("== What drives the auto-suspend saving (Spearman with per-group saving)")
+y = [1 - r["suspend_tuned"] / r["asis_600"] for r in A]
+for f in ("idle_share_mean", "credits60", "util_mean", "overlap_mean"):
+    print("  %-16s %+.2f" % (f, _sp([FE[r["db"]][f] for r in A], y)))
+print("== Greedy vs exhaustive (results/greedy_gap.jsonl)")
+Gg = [json.loads(l) for l in open(D + "greedy_gap.jsonl")]
+print("  groups %d; greedy == exhaustive in %d; exhaustive == main run in %d" % (len(Gg), sum(abs(r["greedy"] - r["exhaustive"]) < 1e-6 for r in Gg), sum(abs(r["recorded"] - r["exhaustive"]) < 1e-6 for r in Gg)))
+print("== Proposition 1 test (results/mechanism.jsonl)")
+Mm = [json.loads(l) for l in open(D + "mechanism.jsonl")]
+E_ = [r for r in Mm if r["equal_size"]]; X_ = [r for r in Mm if not r["equal_size"]]
+print("  merged warehouses %d (equal-size %d, mixed %d)" % (len(Mm), len(E_), len(X_)))
+print("  equal-size: realised %.0f vs predicted %.0f; median ratio %.3f" % (sum(r["sep"] - r["real"] for r in E_), sum(r["overlap_term"] for r in E_),
+      st.median((r["sep"] - r["real"]) / r["overlap_term"] for r in E_ if r["overlap_term"] > 1e-6)))
+print("  mixed: realised %.0f vs predicted %.0f; rate change costs %.0f" % (sum(r["sep"] - r["real"] for r in X_), sum(r["ideal"] for r in X_), sum(r["overlap_term"] - r["ideal"] for r in X_)))

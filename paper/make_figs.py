@@ -40,3 +40,23 @@ for k, lab_, c in (("suspend_tuned", "Tune auto-suspend", C[0]), ("advisor", "Jo
 ax.set_xlabel("Group's billed compute saved vs. default (%)"); ax.set_ylabel("Share of groups")
 ax.set_xlim(0, 100); ax.set_ylim(0, 1.02); ax.legend(frameon=False, fontsize=7, loc="upper left")
 fig.savefig(ROOT + "/paper/figs/f3_cdf.pdf")
+# Fig: savings against each assumed as-is timeout (all 134 groups)
+fig, ax = plt.subplots(figsize=(3.3, 1.55))
+bases = [("asis_600", "600 s\n(default)"), ("asis_300", "300 s"), ("asis_60", "60 s")]
+for i, (k, lab_) in enumerate((("suspend_tuned", "Tune auto-suspend"), ("advisor", "Joint search"))):
+    vals = [100 * (1 - sum(r[k] for r in ok) / sum(r[b] for r in ok)) for b, _ in bases]
+    xs = [j + (i - 0.5) * 0.36 for j in range(3)]; ax.bar(xs, vals, 0.36, color=[C[0], C[2]][i], label=lab_)
+    for x, v in zip(xs, vals): ax.text(x, max(v, 0) + 1, "%.1f" % (0.0 if abs(v) < 0.05 else v), ha="center", fontsize=6)
+ax.set_xticks(range(3), [l for _, l in bases], fontsize=7); ax.set_xlabel("Assumed as-is auto-suspend", fontsize=7)
+ax.set_ylabel("Billed compute saved (%)"); ax.set_ylim(0, 45); ax.legend(frameon=False, fontsize=6.5, loc="upper right")
+fig.savefig(ROOT + "/paper/figs/asis.pdf")
+# Fig: Proposition 1 tested -- realised saving of each merged warehouse vs the saving predicted from overlap and rate
+M = [json.loads(l) for l in open(U + "mechanism.jsonl")]
+fig, ax = plt.subplots(figsize=(3.3, 2.0))
+for eq, c_, lab_ in ((True, C[0], "members of one size"), (False, C[3], "mixed sizes")):
+    xs = [max(r["ideal"], 0.01) for r in M if r["equal_size"] == eq]; ys = [max(r["sep"] - r["real"], 0.01) for r in M if r["equal_size"] == eq]
+    ax.scatter(xs, ys, s=9, color=c_, alpha=0.8, linewidths=0, label=lab_)
+lo, hi = 0.01, 1e4; ax.plot([lo, hi], [lo, hi], color="#999999", lw=0.7, ls="--")
+ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
+ax.set_xlabel("Predicted saving: overlap $-$ rate change (credits)"); ax.set_ylabel("Realised saving in\nthe replay (credits)")
+ax.legend(frameon=False, fontsize=6.5, loc="upper left"); fig.savefig(ROOT + "/paper/figs/mechanism_test.pdf")

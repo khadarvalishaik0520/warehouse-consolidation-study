@@ -152,3 +152,11 @@ billed with the shared billing core. Objective: billed credits s.t. p95 latency 
 - Top-8 groups hold 96% of consolidation saving; rule TP 18 (97.6% of saving), FN 9 (0.6%), FP 8 (median extra 0%,
   median size spread 4x).
 - Overlap SQL (sql/overlap.sql = paper listing) reproduces overlap_mean exactly on the 7 groups testable locally.
+
+## Draft for the research track, EAB (2026-10-27) — post-hoc analyses, reported as such
+- Pre-registered secondary metric computed now: greedy vs exhaustive search on all 32 groups of 3-4 warehouses
+  (verify/greedy_gap.py): identical cost in 32/32; re-run exhaustive equals the main run in 32/32.
+- Exploratory: Proposition 1 tested on all 91 merged warehouses (verify/mechanism_test.py): equal-size merges realised
+  1,342 vs 1,340 credits predicted (median ratio 1.003); mixed-size 12,998 vs 12,859 predicted; rate change costs 12,692.
+- Exploratory: auto-suspend saving vs features (idle share +0.68, credits -0.75, utilisation -0.42, overlap -0.57);
+  counter-example pair (verify/counterexample.py); savings by group size; per-period billing table.
