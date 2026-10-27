@@ -1,0 +1,9 @@
+data/snowset/
+data/snowset_iv/
+__pycache__/
+*.pyc
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out

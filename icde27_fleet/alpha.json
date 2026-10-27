@@ -1,0 +1,16 @@
+{
+ "placeholder": false,
+ "alpha": {
+  "0": 0.3425,
+  "1": 0.7536,
+  "2": 0.9551,
+  "3": 0.9551
+ },
+ "note": {
+  "0": "fitted (10 statements, 20 values)",
+  "1": "fitted (6 statements, 12 values)",
+  "2": "fitted (2 statements, 4 values)",
+  "3": "no data (< 2 statements) -> nearest class 2"
+ },
+ "missing_qids": 0
+}

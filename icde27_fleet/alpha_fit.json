@@ -1,0 +1,326 @@
+[
+ {
+  "src": "f2",
+  "name": "pricing_summary",
+  "xs_s": 0.325,
+  "size": "SMALL",
+  "t_s": 0.161,
+  "alpha": 1.018,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "pricing_summary",
+  "xs_s": 0.325,
+  "size": "MEDIUM",
+  "t_s": 0.14,
+  "alpha": 0.608,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "shipping_priority",
+  "xs_s": 0.427,
+  "size": "SMALL",
+  "t_s": 0.265,
+  "alpha": 0.693,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "shipping_priority",
+  "xs_s": 0.427,
+  "size": "MEDIUM",
+  "t_s": 0.259,
+  "alpha": 0.363,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "revenue_by_nation",
+  "xs_s": 0.685,
+  "size": "SMALL",
+  "t_s": 0.486,
+  "alpha": 0.494,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "revenue_by_nation",
+  "xs_s": 0.685,
+  "size": "MEDIUM",
+  "t_s": 0.461,
+  "alpha": 0.286,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "order_priority_checking",
+  "xs_s": 0.267,
+  "size": "SMALL",
+  "t_s": 0.202,
+  "alpha": 0.403,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "order_priority_checking",
+  "xs_s": 0.267,
+  "size": "MEDIUM",
+  "t_s": 0.168,
+  "alpha": 0.333,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "top_suppliers_by_cost",
+  "xs_s": 0.145,
+  "size": "SMALL",
+  "t_s": 0.133,
+  "alpha": 0.13,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "top_suppliers_by_cost",
+  "xs_s": 0.145,
+  "size": "MEDIUM",
+  "t_s": 0.207,
+  "alpha": -0.256,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "part_type_profit",
+  "xs_s": 0.689,
+  "size": "SMALL",
+  "t_s": 0.67,
+  "alpha": 0.04,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "part_type_profit",
+  "xs_s": 0.689,
+  "size": "MEDIUM",
+  "t_s": 0.639,
+  "alpha": 0.054,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "probe_point",
+  "xs_s": 0.05,
+  "size": "SMALL",
+  "t_s": 0.039,
+  "alpha": 0.344,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "probe_point",
+  "xs_s": 0.05,
+  "size": "MEDIUM",
+  "t_s": 0.036,
+  "alpha": 0.23,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "cd_parts",
+  "xs_s": 0.614,
+  "size": "SMALL",
+  "t_s": 0.493,
+  "alpha": 0.317,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "cd_parts",
+  "xs_s": 0.614,
+  "size": "MEDIUM",
+  "t_s": 0.365,
+  "alpha": 0.374,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "top_cust",
+  "xs_s": 1.164,
+  "size": "SMALL",
+  "t_s": 0.938,
+  "alpha": 0.312,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "top_cust",
+  "xs_s": 1.164,
+  "size": "MEDIUM",
+  "t_s": 0.766,
+  "alpha": 0.302,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "win_rank",
+  "xs_s": 1.647,
+  "size": "SMALL",
+  "t_s": 0.948,
+  "alpha": 0.797,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "win_rank",
+  "xs_s": 1.647,
+  "size": "MEDIUM",
+  "t_s": 0.498,
+  "alpha": 0.863,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "self_join",
+  "xs_s": 2.279,
+  "size": "SMALL",
+  "t_s": 1.363,
+  "alpha": 0.742,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "self_join",
+  "xs_s": 2.279,
+  "size": "MEDIUM",
+  "t_s": 0.789,
+  "alpha": 0.765,
+  "class": 1
+ },
+ {
+  "src": "f2",
+  "name": "ps_cross",
+  "xs_s": 0.057,
+  "size": "SMALL",
+  "t_s": 0.045,
+  "alpha": 0.341,
+  "class": 0
+ },
+ {
+  "src": "f2",
+  "name": "ps_cross",
+  "xs_s": 0.057,
+  "size": "MEDIUM",
+  "t_s": 0.063,
+  "alpha": -0.072,
+  "class": 0
+ },
+ {
+  "src": "f2b",
+  "name": "q1_pricing",
+  "xs_s": 4.934,
+  "size": "SMALL",
+  "t_s": 2.537,
+  "alpha": 0.96,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "q1_pricing",
+  "xs_s": 4.934,
+  "size": "MEDIUM",
+  "t_s": 1.373,
+  "alpha": 0.922,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "q6_forecast",
+  "xs_s": 0.311,
+  "size": "SMALL",
+  "t_s": 0.184,
+  "alpha": 0.76,
+  "class": 0
+ },
+ {
+  "src": "f2b",
+  "name": "q6_forecast",
+  "xs_s": 0.311,
+  "size": "MEDIUM",
+  "t_s": 0.145,
+  "alpha": 0.552,
+  "class": 0
+ },
+ {
+  "src": "f2b",
+  "name": "q3_shipping",
+  "xs_s": 2.543,
+  "size": "SMALL",
+  "t_s": 1.632,
+  "alpha": 0.639,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "q3_shipping",
+  "xs_s": 2.543,
+  "size": "MEDIUM",
+  "t_s": 1.262,
+  "alpha": 0.505,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "q18_large",
+  "xs_s": 13.601,
+  "size": "SMALL",
+  "t_s": 6.968,
+  "alpha": 0.965,
+  "class": 2
+ },
+ {
+  "src": "f2b",
+  "name": "q18_large",
+  "xs_s": 13.601,
+  "size": "MEDIUM",
+  "t_s": 3.668,
+  "alpha": 0.945,
+  "class": 2
+ },
+ {
+  "src": "f2b",
+  "name": "cd_supp_part",
+  "xs_s": 6.127,
+  "size": "SMALL",
+  "t_s": 4.086,
+  "alpha": 0.584,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "cd_supp_part",
+  "xs_s": 6.127,
+  "size": "MEDIUM",
+  "t_s": 2.026,
+  "alpha": 0.798,
+  "class": 1
+ },
+ {
+  "src": "f2b",
+  "name": "top_cust_100",
+  "xs_s": 20.665,
+  "size": "SMALL",
+  "t_s": 13.118,
+  "alpha": 0.656,
+  "class": 2
+ },
+ {
+  "src": "f2b",
+  "name": "top_cust_100",
+  "xs_s": 20.665,
+  "size": "MEDIUM",
+  "t_s": 5.042,
+  "alpha": 1.018,
+  "class": 2
+ }
+]
