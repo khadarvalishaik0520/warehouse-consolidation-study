@@ -37,3 +37,12 @@ print("  consolidation saving captured by acting on week 1: %.0f of the oracle's
 allplan = sum(r["w2_with_w1_plan"][0] for r in R)
 print("  week-1 joint plans everywhere (no rule): %.0f credits; groups missing a latency target: rule %d, all plans %d, timeouts %d"
       % (allplan, miss, sum(not r["w2_with_w1_plan"][1] for r in R), sum(not r["w2_with_w1_susp"][1] for r in R)))
+# coverage: how much of the full-trace consolidation saving sits in the analysed groups
+F3 = os.environ.get("F3", os.path.join(HERE, "..", "results", "f3.jsonl"))
+if os.path.exists(F3):
+    T = {json.loads(l)["db"]: json.loads(l) for l in open(F3)}; inc = {r["db"] for r in R}; allg = inc | {r["db"] for r in skip}
+    g = {d: max(0.0, min(T[d]["size_tuned"], T[d]["suspend_tuned"]) - T[d]["advisor"]) for d in allg}
+    pf = lambda t: (any(len(m) > 1 for m, _, _ in t["advisor_plan"]) and min(t["size_tuned"], t["suspend_tuned"]) - t["advisor"] >= 1
+                    and 1 - t["advisor"] / min(t["size_tuned"], t["suspend_tuned"]) > 0.05)
+    print("coverage: analysed groups hold %.1f%% of the full-trace consolidation saving; %d of the %d full-trace paying groups"
+          % (100 * sum(g[d] for d in inc) / sum(g.values()), sum(pf(T[d]) for d in inc), sum(pf(T[d]) for d in allg)))

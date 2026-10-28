@@ -22,7 +22,8 @@
 Merging cloud data warehouses saves money when their workloads run at the same time, not when they sit idle. Under
 per-second billing, warehouses that run side by side each pay for the seconds they share, and a merged warehouse pays for
 them once; idle time, the usual reason to consolidate, is removed more cheaply by a shorter auto-suspend timeout. We derive
-this from the billing rule and test it on two weeks of Snowflake's public fleet trace: 134 groups of warehouses that serve
+this from the billing rule, confirm it on Snowflake---three real merges saved 49.8\%, 20.1\% and 0.0\% of metered
+credits against 49.8\%, 20.0\% and 0.0\% predicted---and test it on two weeks of Snowflake's public fleet trace: 134 groups of warehouses that serve
 the same database, 388 warehouses and 18.6 million queries, replayed under a billing model checked against Snowflake's own
 records (running time within 0.6\%), with size scaling measured on Snowflake. Under a 1.2$\times$ latency bound,
 auto-suspend alone removes 24\% of the billed compute (60\% for the median group), assuming every warehouse runs the
@@ -31,7 +32,8 @@ Where it does pay---21 of 134 groups---it cuts the best tuned bill by 5--70\% (m
 fleet's consolidation saving, 15\% of the tuned total, and one 17-warehouse group holds two thirds of it (without it, 5.5\%). Across the 79 same-size merges the search makes,
 the saving predicted from overlap alone matches the replay's to within 0.2\% in total. A rule
 on the overlap of running periods, computed from query history alone, finds the groups where merging pays with a
-leave-one-out balanced accuracy of 0.80. The findings hold across seven sensitivity settings. All code, results,
+leave-one-out balanced accuracy of 0.80; fitted on one week of history, it predicts which groups pay the next week with
+balanced accuracy 0.86--0.88. The findings hold across seven sensitivity settings. All code, results,
 calibration logs and the pre-registration are public.
 \end{abstract}
 
@@ -60,7 +62,8 @@ bill by 5--70\%, and those groups hold 98\% of the fleet's consolidation saving;
 thirds, and without it consolidation adds 5.5\% of the tuned total.
 \item \textbf{RQ3. When does it pay?} We expected lightly used, idle-heavy warehouses to benefit. The data say the opposite:
 merging pays when members' running periods overlap, because concurrent running time is billed once. We derive this from
-the billing rule, and a rule on overlap alone reaches a leave-one-out balanced accuracy of 0.80.
+the billing rule, real merges on Snowflake save the predicted amount to within 0.1 points, and a rule on overlap alone reaches a
+leave-one-out balanced accuracy of 0.80.
 \item \textbf{RQ4. How robust are these answers?} They hold under seven changes to the latency bound, concurrency, resume
 delay and size model; greedy search matches exhaustive search in all 42 groups where both can run; and the size model
 predicts held-out sizes far better than the simple alternatives.
@@ -104,7 +107,7 @@ nothing, while two busy warehouses that run side by side gain everything they sh
 proposition in two ways, both costs: queries from several members may queue for the merged warehouse's concurrency slots,
 and members of different sizes must move to one rate, usually the largest to keep latency. Figure~\ref{fig:mech} illustrates
 the two extremes. The proposition makes a prediction the rest of the paper tests: on the real fleet, the saving of every
-merge should equal its members' overlap, net of the rate change (Figure~\ref{fig:mtest}, Section~\ref{sec:rq3}).
+merge should equal its members' overlap, net of the rate change (Figure~\ref{fig:mtest}, Section~\ref{sec:rq3}), and a real merge on Snowflake should save it (Section~\ref{sec:merge}).
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{figs/mechanism.pdf}
@@ -211,7 +214,7 @@ does not matter (Section~\ref{sec:rq3}). The timestamps are the author's own, re
 external registry. The public repository was published after the main study, so its history starts then; the two
 additions after publication (a week-1/week-2 test of the rule and a real merge on Snowflake) were pushed to it before
 they were run. The plan was first written for the industry track under a
-working title; a dated addendum records the change to this track. We disclose seven deviations; the repository maps each to
+working title; a dated addendum records the change to this track. We disclose nine deviations; the repository maps each to
 its dated entry in the plan. (1)~The analysis keeps the 134 frozen groups although the runner also produced 21 groups after
 dropping size-changing members. (2)~The 5\% threshold for ``pays'' was fixed after the main run; Section~\ref{sec:rq4} shows
 the rule at 3\% and 10\%. (3)~An independent review found that the pre-registered analysis compared every option only on
@@ -225,7 +228,11 @@ against exhaustive search and the size model's held-out error were computed only
 of five to eight by caching each block's best cost; all are reported in Section~\ref{sec:rq4}. (7)~A second review found that the original definition of ``pays'' (extra saving above 5\% alone)
 counted three groups that merge nothing and three that save under one credit; we tightened it as stated in
 Section~\ref{sec:design}. Under the original definition 27 groups pay and the rule's leave-one-out balanced accuracy is
-0.76; every other conclusion is unchanged. Analyses marked \emph{exploratory} were not pre-registered.
+0.76; every other conclusion is unchanged. (8)~A third review asked whether the rule predicts the future; the week-1 to
+week-2 test (Section~\ref{sec:rq3}) was added and written down, with its expected outcome, before it was run, and pushed to
+the public repository with the plan. (9)~The real merge on Snowflake (Section~\ref{sec:merge}) was added the same way; a
+session timeout cut three of its statements (reported there), and the analysis script's first event filter matched no
+events and was fixed before any metered number was read. Analyses marked \emph{exploratory} were not pre-registered.
 
 \section{Calibration on Snowflake}\label{sec:calib}
 \subsection{Is the billing model right?}
@@ -319,6 +326,31 @@ top customers      & SF100  & 20.67 & 13.12 & 5.04 & 0.66 & 1.02 \\
 median error of 12.4\% (90th percentile 44\%). Held out by size, fitting $\alpha$ on Medium and predicting Small gives a
 median error of 12.4\%, and fitting on Small and predicting Medium 24.8\%. The two simple alternatives do much worse:
 assuming no speed-up errs by a median 60\%, and assuming linear speed-up by 35\%.
+
+\subsection{Does a real merge save what the replay predicts?}\label{sec:merge}
+The checks above validate one warehouse at a time. The paper's subject is merging, so we also merged warehouses on
+Snowflake. From the trace we took 90-minute windows of three same-size warehouse pairs, chosen by a rule fixed in the plan
+before any run: the window with the highest predicted saving among groups where consolidation pays (\emph{high overlap}),
+one in a different such group whose predicted saving is closest to 20\% (\emph{partial overlap}), and the window with the
+largest bills among those predicted to save nothing (\emph{turn-taking}). Each pair ran at X-Small with \autos{} 60\,s on
+three dedicated warehouses at the same time---member A alone, member B alone, and both merged---with every statement
+replaced by \texttt{GENERATOR(TIMELIMIT~$\Rightarrow$~$d$)} of the trace duration $d$, sent at its trace offset (1,096
+statements; median 0.1\,s late). The replay's predictions were recorded and pushed to the public repository before the run.
+
+Figure~\ref{fig:mergesf} shows Snowflake's metered credits. Merging the high-overlap pair saved 49.8\% (predicted
+49.8\%), the partial-overlap pair 20.1\% (predicted 20.0\%), and the turn-taking pair 0.0\% (predicted 0.0\%): the saving
+is the overlap, as Proposition~\ref{prop:merge} says, and two warehouses that take turns gain nothing from sharing even
+though each is idle half the time. Run concurrently and merged, the billing model's running time on the executed
+statements matched Snowflake's resume and suspend records to within 0.31\% on all nine warehouses, and the implied rate
+was the same on all nine (1.35--1.36 credits per running hour). One deviation: a session timeout of 300\,s cut three
+turn-taking statements longer than that, equally on their own and on the merged warehouse, so that pair billed 75 rather
+than 83 minutes; the comparison is unaffected.
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{figs/merge_sf.pdf}
+\caption{A real merge on Snowflake: metered credits of two warehouses run separately and of the same statements on one
+merged warehouse (X-Small, \autos{} 60\,s, 90 minutes each), with the saving the replay predicted before the run.}\label{fig:mergesf}
+\end{figure}
 
 \section{Results}
 \subsection{RQ1: Where do the savings come from?}\label{sec:rq1}
@@ -534,6 +566,15 @@ balanced accuracy 0.80, precision 0.64 and recall 0.67 (baseline 0.50). A single
 lands lower (0.33) and reaches 0.82, but with precision 0.36: overlap above one third is necessary rather than
 sufficient.
 
+\textbf{Does the rule predict the next week?} A platform team would look at past history, decide, and live with the
+result. We therefore fitted the rule on the first week of the trace and applied it to the second, as pre-registered after
+review (deviation~(8)). The 72 groups whose members all run in both weeks hold 96\% of the consolidation saving. Fitted on
+week 1, the threshold lands lower (overlap $>0.35$); applied to week-1 features, it predicts which groups pay in week 2
+with balanced accuracy 0.88 (precision 0.52, recall 1.00), and the full-trace threshold of 0.617 used the same way reaches
+0.86 (precision 0.75, recall 0.80). Acting on history---each flagged group adopts its week-1 plan unchanged---captures
+6,614 of the 6,637 credits that the best week-2 plans save by consolidation. Week-1 latency targets are missed in week 2
+by 35 groups, but 36 miss them with no change at all: p95 drifts between weeks, and the plans do not add to it.
+
 \textbf{Where the money is, and what the rule misses (exploratory).} The eight groups with the largest consolidation saving hold 96\% of
 it; five of them have a mean overlap of 1.0 and seven are above 0.617. Scored against the 21 groups where consolidation
 pays, the rule flags 15 correctly; those 15 hold 97.5\% of the fleet's consolidation saving. It misses 6, mostly pairs of
@@ -669,8 +710,9 @@ first-come first-served slots, not Snowflake's resource-based limit; four slots 
 but not its pattern. Result-cache and local-cache effects are not modelled; merging could warm or cool caches. The timeout
 grid stops at 60\,s.
 
-\textbf{Construct validity.} The billing validation used one X-Small warehouse with sequential probes; it did not exercise
-concurrency or merging. The 60-second minimum cannot bind in any option we evaluate: every option uses \autos{}
+\textbf{Construct validity.} The billing validation used one X-Small warehouse with sequential probes; the merge test
+(Section~\ref{sec:merge}) adds concurrency and merging, but on three pairs, at X-Small, with synthetic statements of the
+trace's durations rather than the original queries, and without size changes. The 60-second minimum cannot bind in any option we evaluate: every option uses \autos{}
 $\ge 60$\,s, so every running period lasts at least 60\,s (Section~\ref{sec:billing}). The replay still applies the
 minimum, and the unit tests check it on 200 random workloads, binding below 60\,s and never at or above
 (\texttt{tests/test\_advisor.py}). The ``pays'' threshold was set after the main run (we report 3\% and 10\%).

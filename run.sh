@@ -15,6 +15,8 @@ case "${1:-}" in
         a08) $F3 --alpha-scale 0.8 --tag f5_a08 ;;  a12) $F3 --alpha-scale 1.2 --tag f5_a12 ;;  *) sed -n 2,6p "$0" ;; esac ;;
   analysis) python3 analysis/icde_all134.py; python3 analysis/icde_review2.py; python3 analysis/paper_numbers.py
             python3 analysis/pays_v2.py; python3 sf/validate_f1.py; (cd paper && python3 make_figs.py)
-            python3 analysis/case17.py; python3 analysis/counterexample.py ;;
+            python3 analysis/case17.py; python3 analysis/counterexample.py
+            python3 icde27_fleet/f7/analyze_split.py icde27_fleet/f7/split.jsonl
+            python3 icde27_fleet/f6/analyze_f6.py; python3 icde27_fleet/f6/fig_f6.py ;;
   *) sed -n 2,6p "$0" ;;
 esac

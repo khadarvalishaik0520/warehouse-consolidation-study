@@ -240,3 +240,29 @@ billed with the shared billing core. Objective: billed credits s.t. p95 latency 
   statements as executed vs Snowflake's resume/suspend events, per warehouse; implied credits per running hour equal
   across the nine warehouses. Reported whatever the outcome, including failed or late statements.
 - Budget: about 6.6 billed X-Small hours (7-9 credits). Must run before the trial ends (~Nov 7).
+
+## F7 result (2026-10-27 21:50 ET) — expectations met; analysis exactly as in Addendum 7
+- 72 groups analysed, 62 excluded (a member runs nothing in one week); the 72 hold 96.0% of the full-trace consolidation
+  saving and 16 of the 21 paying groups. Pays: week 1 14, week 2 15, both 14.
+- Week-1 threshold: overlap > 0.346. Week-1 features -> week-2 labels: bal.acc 0.88, precision 0.52, recall 1.00.
+  Full-trace threshold 0.617 the same way: 0.86 / 0.75 / 0.80. Reference week-2 on week-2 at 0.617: 0.87 / 0.80 / 0.80.
+- Act on history (rule + week-1 plans) in week 2: 18,609 credits vs 25,223 with week-1 timeouts everywhere and 18,586 for
+  the week-2 oracle joint search: 6,614 of 6,637 credits of consolidation saving captured (99.7%).
+- Groups missing a week-1 latency target in week 2: rule 35, timeouts 36, no change at all 36 (f7/asis_miss.py, added as
+  context after the pre-registered metrics): week-to-week p95 drift, not the plans.
+
+
+## F6 result (2026-10-28 05:48 ET) — expectation met; analysis as in Addendum 8
+- Ran 2026-10-27 20:39-22:15 ET; 1,096 statements sent, none failed to send; lateness median 0.10 s, p90 0.48 s, 34 of
+  1,096 later than 1 s (max 30.6 s, a burst in TT). Truth pulled 2026-10-28 05:47 ET.
+- Metered compute credits, separate A+B vs merged, saving (predicted before the run):
+    HO 1.2004 vs 0.6022 -> 49.8% (49.8%);  PO 1.8720 vs 1.4955 -> 20.1% (20.0%);  TT 1.6819 vs 1.6815 -> 0.0% (0.0%).
+  Within 0.1 percentage points in every scenario (expectation: within 5), ordered HO > PO > TT.
+- Secondary: billing model on executed statements vs Snowflake resume/suspend events, per warehouse: 0.31% worst (9
+  warehouses, 2-30 periods each). Implied credits per running hour 1.351-1.356 on all nine. No overload queueing.
+- Disclosed: the session's statement timeout (300 s, set in sf_wcp.connect for earlier runs) cut the three TT statements
+  longer than 300 s (304, 513, 563 s) on both their own and the merged warehouse, so TT ran 74.7 rather than 82.6 billed
+  minutes; the comparison is unaffected because both sides were cut the same way.
+- Analysis-script fix before reading any metered number: Snowflake logs RESUME/SUSPEND_WAREHOUSE with state STARTED;
+  analyze_f6.py first filtered on COMPLETED (found nothing) and now takes the events regardless of state, as validate_f1.py.
+

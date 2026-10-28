@@ -16,8 +16,8 @@ def predicted(sc):
     return out
 
 def line(label, v):
-    sep = v["A"] + v["B"]
-    return "  %-34s A %7.1f  B %7.1f  A+B %7.1f  merged %7.1f  saving %6.1f (%5.1f%%)" % (
+    sep = v["A"] + v["B"]; f = "%7.4f" if "credits" in label else "%7.1f"
+    return ("  %-34s A " + f + "  B " + f + "  A+B " + f + "  merged " + f + "  saving " + f + " (%5.1f%%)") % (
         label, v["A"], v["B"], sep, v["M"], sep - v["M"], 100 * (sep - v["M"]) / sep)
 
 pred = {s: predicted(sc) for s, sc in S["scenarios"].items()}
@@ -44,8 +44,10 @@ for s, sc in S["scenarios"].items():
         cur, tot = None, 0.0
         for r in EV:
             if r["WAREHOUSE_NAME"] != w: continue
-            if r["EVENT_NAME"] == "RESUME_WAREHOUSE" and r["EVENT_STATE"] == "COMPLETED": cur = P(r["TIMESTAMP"])
-            elif r["EVENT_NAME"] == "SUSPEND_WAREHOUSE" and r["EVENT_STATE"] == "COMPLETED" and cur is not None:
+            # Snowflake logs these two events with state STARTED (as in F1's validate_f1.py); the first version of this
+            # script filtered on COMPLETED and found none -- fixed before any metered number was read
+            if r["EVENT_NAME"] == "RESUME_WAREHOUSE": cur = P(r["TIMESTAMP"])
+            elif r["EVENT_NAME"] == "SUSPEND_WAREHOUSE" and cur is not None:
                 tot += max(60.0, P(r["TIMESTAMP"]) - cur); cur = None
         evs[x] = tot; met[x] = sum(float(r["CREDITS_USED_COMPUTE"]) for r in ME if r["WAREHOUSE_NAME"] == w)
     print("  statements failed %d, total queued for overload %.1f s" % (fails, queued))

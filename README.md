@@ -72,6 +72,9 @@ differ; the raw logs and Snowflake's own records from our runs are in `sf/runs/`
 - `icde27_fleet/f6/` and `icde27_fleet/sf_f6.py` — a real merge on Snowflake: three Snowset windows (high overlap, partial
   overlap, turn-taking) run separately and merged on nine X-Small warehouses (`sf/setup_f6.sql`). The window scan,
   selection rule, schedule (`schedule.json`) and predictions were committed before the run.
+- Results: the real merges saved 49.8%, 20.1% and 0.0% of metered credits (predicted 49.8%, 20.0%, 0.0%); raw logs in
+  `sf/runs/f6_*.jsonl`, Snowflake's records in `sf/truth/f6_*.csv`. The week-1 rule predicts week-2 outcomes with balanced
+  accuracy 0.86-0.88. Both are printed by `./run.sh analysis`.
 
 ## Data
 
