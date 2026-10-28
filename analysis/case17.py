@@ -7,10 +7,10 @@ import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 plt.rcParams.update({"font.size": 8, "font.family": "serif", "axes.spines.top": False, "axes.spines.right": False, "savefig.bbox": "tight", "savefig.pad_inches": 0.02})
 D = ROOT + "/"
 r = next(r for r in map(json.loads, open(D + "icde27_fleet/results/f3.jsonl")) if r["warehouses"] == 17)
-size = dict(duckdb.connect().execute(f"select wh, size_min from read_parquet('{D}data/snowset_iv/warehouses.parquet')").fetchall())
+X = D + "data/extracts/group_%s.parquet" % r["db"]          # small extract shipped with the repo (same rows as Snowset)
+size = dict(duckdb.connect().execute(f"select distinct wh, size_min from read_parquet('{X}')").fetchall())
 iv = collections.defaultdict(list)
-members = [w for m, _, _ in r["advisor_plan"] for w in m]
-for w, s, e in duckdb.connect().execute(f"select wh, s, e from read_parquet('{D}data/snowset_iv/intervals/*/*.parquet', hive_partitioning=true) where wh in (select unnest(?)) order by wh, s", [members]).fetchall(): iv[w].append((s, e))
+for w, s, e in duckdb.connect().execute(f"select wh, s, e from read_parquet('{X}') order by wh, s").fetchall(): iv[w].append((s, e))
 P = {w: periods(v, 60) for w, v in iv.items()}
 t0 = min(p[0][0] for p in P.values()); t1 = max(p[-1][1] for p in P.values())
 # concurrency: how many member warehouses are running, time-weighted

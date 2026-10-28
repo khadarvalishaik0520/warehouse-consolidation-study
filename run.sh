@@ -14,7 +14,7 @@ case "${1:-}" in
         r0) $F3 --resume 0 --tag f5_r0 ;;  r5) $F3 --resume 5 --tag f5_r5 ;;
         a08) $F3 --alpha-scale 0.8 --tag f5_a08 ;;  a12) $F3 --alpha-scale 1.2 --tag f5_a12 ;;  *) sed -n 2,6p "$0" ;; esac ;;
   analysis) python3 analysis/icde_all134.py; python3 analysis/icde_review2.py; python3 analysis/paper_numbers.py
-            python3 sf/validate_f1.py; (cd paper && python3 make_figs.py)
-            [ -d data/snowset_iv ] && python3 analysis/case17.py || echo "case17.py skipped (needs data/snowset_iv)" ;;
+            python3 analysis/pays_v2.py; python3 sf/validate_f1.py; (cd paper && python3 make_figs.py)
+            python3 analysis/case17.py; python3 analysis/counterexample.py ;;
   *) sed -n 2,6p "$0" ;;
 esac

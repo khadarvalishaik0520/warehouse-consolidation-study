@@ -64,6 +64,11 @@ for f in ("idle_share_mean", "credits60", "util_mean", "overlap_mean"):
 print("== Greedy vs exhaustive (results/greedy_gap.jsonl)")
 Gg = [json.loads(l) for l in open(D + "greedy_gap.jsonl")]
 print("  groups %d; greedy == exhaustive in %d; exhaustive == main run in %d" % (len(Gg), sum(abs(r["greedy"] - r["exhaustive"]) < 1e-6 for r in Gg), sum(abs(r["recorded"] - r["exhaustive"]) < 1e-6 for r in Gg)))
+print("== Greedy vs exhaustive, groups of 5-8 (results/greedy_gap_large.jsonl)")
+Gl = [json.loads(l) for l in open(D + "greedy_gap_large.jsonl")]
+print("  groups %d (k = %s); greedy == exhaustive in %d; greedy re-run == main run in %d; max gap %.3f%%" % (len(Gl), ",".join(str(r["k"]) for r in sorted(Gl, key=lambda r: r["k"])),
+      sum(abs(r["greedy"] - r["exhaustive"]) < 1e-6 for r in Gl), sum(abs(r["recorded"] - r["greedy"]) < 1e-6 for r in Gl),
+      100 * max((r["greedy"] - r["exhaustive"]) / r["exhaustive"] for r in Gl)))
 print("== Proposition 1 test (results/mechanism.jsonl)")
 Mm = [json.loads(l) for l in open(D + "mechanism.jsonl")]
 E_ = [r for r in Mm if r["equal_size"]]; X_ = [r for r in Mm if not r["equal_size"]]
@@ -71,3 +76,9 @@ print("  merged warehouses %d (equal-size %d, mixed %d)" % (len(Mm), len(E_), le
 print("  equal-size: realised %.0f vs predicted %.0f; median ratio %.3f" % (sum(r["sep"] - r["real"] for r in E_), sum(r["overlap_term"] for r in E_),
       st.median((r["sep"] - r["real"]) / r["overlap_term"] for r in E_ if r["overlap_term"] > 1e-6)))
 print("  mixed: realised %.0f vs predicted %.0f; rate change costs %.0f" % (sum(r["sep"] - r["real"] for r in X_), sum(r["ideal"] for r in X_), sum(r["overlap_term"] - r["ideal"] for r in X_)))
+
+print("== Size scaling per statement (paper Table II)")
+T = collections.defaultdict(dict)
+for r in rows: T[(r["src"], r["name"])].update({"xs": r["xs_s"], r["size"]: r["t_s"], "a_" + r["size"]: r["alpha"], "c": r["class"]})
+for (src, name), v in sorted(T.items(), key=lambda kv: kv[1]["xs"]):
+    print("  class %d %-4s %-26s XS %6.2f  S %6.2f  M %6.2f  alpha_S %5.2f  alpha_M %5.2f" % (v["c"], src, name, v["xs"], v["SMALL"], v["MEDIUM"], v["a_SMALL"], v["a_MEDIUM"]))

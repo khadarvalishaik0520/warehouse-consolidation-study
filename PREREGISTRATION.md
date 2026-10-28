@@ -1,9 +1,12 @@
 # Pre-registration and deviation log
 
 This file is the study plan as written during the work; each addendum and deviation is dated when it was written
-(US Eastern time). It is reproduced verbatim except for 8 short phrases that named a separate study by the author;
-those are replaced by text in [square brackets]. Experiment ids: F1 billing validation, F2/F2b size scaling, F3 replay,
-F4 features and rule, F5 sensitivity.
+(US Eastern time). The timestamps are the author's own and are mirrored in this repository's git history; they were not
+lodged with an external registry. The file is reproduced verbatim except for 8 short phrases that named a separate study
+by the author; those are replaced by text in [square brackets]. The plan was first written for the ICDE Industry &
+Applications track under a working title; Addendum 6 records the change to the Research track (EAB). Addendum 6 also
+maps the paper's numbered deviations (1)-(7) to the dated entries below. Experiment ids: F1 billing validation, F2/F2b
+size scaling, F3 replay, F4 features and rule, F5 sensitivity.
 
 ---
 
@@ -160,3 +163,80 @@ billed with the shared billing core. Objective: billed credits s.t. p95 latency 
   1,342 vs 1,340 credits predicted (median ratio 1.003); mixed-size 12,998 vs 12,859 predicted; rate change costs 12,692.
 - Exploratory: auto-suspend saving vs features (idle share +0.68, credits -0.75, utilisation -0.42, overlap -0.57);
   counter-example pair (verify/counterexample.py); savings by group size; per-period billing table.
+
+## Addendum 6 (2026-10-27 07:00 ET) — change of track and title; bookkeeping
+- Track and title changed: the paper is submitted to the ICDE 2027 Research track, Experiment, Analysis and Benchmark
+  category (Round 2, due 2026-11-11), as "[Experiment, Analysis, and Benchmark] Consolidate or Separate? Usually Neither:
+  When Merging Cloud Data Warehouses Pays". It is NOT submitted to the Industry & Applications track. The header of this
+  file records the plan as first written (industry track, working title "A Billing-Exact Fleet Advisor").
+- Schedule above is the schedule as originally planned; the work ran ahead of it (all runs 2026-10-19 to 2026-10-22,
+  single author). Timestamps in this file are the author's own and are mirrored in the public git history; they were not
+  lodged with an external registry.
+- Paths renamed in the public repository: verify/*.py -> analysis/*.py; the results notes referred to as
+  claude/icde2027-fleet-advisor-results.md are private working notes, superseded by the scripts in analysis/.
+- Mapping of the paper's deviation list to this file: paper (1) = runner note under F3 ("155 groups ... frozen 134");
+  (2) = Addendum 4 context; (3) = Deviation 7; (4) = Deviation 6; (5) = Addendum 3; (6) = "Draft for the research track"
+  (greedy vs exhaustive, held-out size-model error); (7) = Deviation 8 below.
+
+## Deviation 8 (2026-10-27 07:00 ET, after a second review) — definition of "consolidation pays" tightened
+- Found: 3 of the 27 groups counted as "pays" merge nothing; their extra saving comes from changing size and timeout
+  together, which neither single-knob option does. 3 more save under 1 credit in two weeks (relative 5% on a near-zero bill).
+- New definition used in the paper: extra saving > 5% AND the joint plan merges warehouses AND >= 1 credit saved.
+  21 groups pay (old definition: 27; both reported). All groups without a merge together save 0.54 credits of 14,361.
+- Re-fitted rule (same procedure as Addendum 4): LOO depth-2 tree balanced accuracy 0.798 (precision 0.64, recall 0.67),
+  full-data threshold overlap_mean > 0.617; single stump LOO 0.821 (precision 0.36, recall 0.95) at 0.33. The original
+  rule (overlap_mean > 0.547) applied unchanged: in-sample 0.81. Script: verify/pays_v2.py (repo: analysis/pays_v2.py).
+- Exhaustive search extended to the 10 greedy groups of 5-8 warehouses (verify/greedy_gap_large.py): results reported as
+  they come out.
+
+## Result note (2026-10-27 08:00 ET) — exhaustive search on groups of 5-8 warehouses
+- 10 groups (k = 5,5,5,6,6,6,6,6,7,8), exhaustive over all set partitions (Bell(8) = 4,140) with each block's best
+  (size, timeout) cached. Greedy cost == exhaustive cost in 10/10 (max gap 0.000%); greedy re-run == main run in 10/10.
+  One group (157924786629569817) has a different but equally cheap plan. Unchecked: the groups of 9, 17 and 18 warehouses.
+  File: icde27_fleet/results/greedy_gap_large.jsonl; summary printed by analysis/paper_numbers.py.
+
+## Addendum 7 (2026-10-27 20:21 ET, written before running) — F7: time-split test of the overlap rule (exploratory)
+- Motivation (third review): leave-one-out across groups does not show the rule predicts the future. A platform team
+  would look at past history, decide, and live with the result.
+- Split: week 1 = first 7 days of the trace; week 2 = the remaining ~6.3 days. Same 134 frozen groups; groups with a
+  warehouse that runs nothing in either week are excluded and counted.
+- Per group and week: features as f4_features.py; options as run_f3.py (as-is 600 s, size-tuned, suspend-tuned, joint
+  search), latency targets 1.2 x that week's as-is p95. Script: f7/run_split.py -> f7/split.jsonl.
+- Label per week: pays = joint plan merges warehouses AND extra saving > 5% over the best single knob AND >= 0.5 credits
+  saved (the 1-credit floor of Deviation 8, pro-rated to one week).
+- Rule test: threshold on week-1 overlap_mean chosen to maximise week-1 balanced accuracy (ties: lowest threshold);
+  predict week-2 labels from week-1 features. Also report the full-trace threshold (0.617) used the same way, and the
+  week-2 rule on week-2 labels for reference. Metrics: balanced accuracy, precision, recall.
+- Act-on-history: flagged groups adopt their week-1 joint plan, the rest their week-1 suspend-tuned timeouts; both
+  replayed unchanged on week-2 traffic against week-1 targets. Report week-2 cost vs (a) week-1 timeouts everywhere,
+  (b) the week-2 oracle joint search, and the number of groups that miss a latency target.
+- Expectation, recorded now: week-1 -> week-2 balanced accuracy within 0.1 of the leave-one-out value (0.80), and acting
+  on week-1 plans captures at least 80% of the oracle week-2 consolidation saving. Reported whatever the outcome.
+
+## Addendum 8 (2026-10-27 20:27 ET, written before any run) — F6: a real merge on Snowflake
+- Motivation (third review): the billing validation (F1) used one warehouse with sequential probes and never measured a
+  merge, which is the paper's subject. F6 runs Snowset windows separately and merged on real warehouses.
+- Window scan (f6/scan_windows.py -> f6/windows.jsonl): frozen groups, same-size member pairs, 90-minute windows every
+  30 min; kept if each member has 15-400 statements, no statement > 600 s, merged concurrency <= 8 (so no queueing),
+  and each member is billed >= 10 min at 60 s auto-suspend. 1,373 windows of 29 pairs.
+- Selection rule (f6/make_schedule.py), fixed before seeing any Snowflake result:
+  HO = highest predicted saving among windows of groups where consolidation pays, with each member billed <= 80% of
+  the window (both members suspend at times); PO = among the same, in a different group, the window whose predicted
+  saving is closest to 20%; TT = among windows with predicted saving <= 2%, the one with the largest smaller member bill.
+- Chosen: HO group 2942415362034685105 (132 statements), PO group 5967229572268762593 (168), TT group
+  386941512000490153 (248). Schedule f6/schedule.json, sha 8115135dc25b0508.
+- Run (sf_f6.py, ./run_sf.sh f6): nine dedicated X-Small warehouses (sf/setup_f6.sql), AUTO_SUSPEND 60; per scenario
+  member A and member B on their own warehouses and both on a third, all three at the same wall-clock time. Each
+  statement = GENERATOR(TIMELIMIT => d), d = Snowset duration rounded to whole seconds (min 1 s); durations are used
+  as-is at X-Small (this test is about billing, not size scaling). Statements are sent asynchronously at their offsets.
+- Truth (./run_sf.sh pull6, the morning after): QUERY_HISTORY, WAREHOUSE_EVENTS_HISTORY, WAREHOUSE_METERING_HISTORY
+  for the nine warehouses -> sf/truth/f6_*.csv. Analysis: f6/analyze_f6.py.
+- Predictions, recorded now (replay at X-Small, 8 slots, 1 s billed resume delay; billed minutes):
+    HO  A 26.8  B 26.9  A+B 53.7  merged 26.9  saving 49.8%
+    PO  A 20.4  B 62.6  A+B 83.0  merged 66.4  saving 20.0%
+    TT  A 41.5  B 41.2  A+B 82.6  merged 82.6  saving  0.0%
+- Primary outcome: saving fraction (A+B-merged)/(A+B) from metered compute credits, per scenario, against the prediction.
+  Expectation: within 5 percentage points in each scenario, and ordered HO > PO > TT. Secondary: model on the
+  statements as executed vs Snowflake's resume/suspend events, per warehouse; implied credits per running hour equal
+  across the nine warehouses. Reported whatever the outcome, including failed or late statements.
+- Budget: about 6.6 billed X-Small hours (7-9 credits). Must run before the trial ends (~Nov 7).

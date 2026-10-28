@@ -35,16 +35,19 @@ python3 tests/test_billing.py && python3 tests/test_advisor.py
 - `analysis/paper_numbers.py` — as-is timeout comparison, size-model accuracy, top-8 table, rule errors, joint-plan composition, savings by group size, drivers of the auto-suspend saving, greedy-vs-exhaustive gap and the Proposition 1 test;
 - `sf/validate_f1.py` — billing validation table (model vs Snowflake resume/suspend events);
 - `paper/make_figs.py` — every figure drawn from the result files (savings, per-group, as-is timeout, overlap, Proposition 1 test);
-- `analysis/case17.py` — the 17-warehouse case study and its figure (needs the Snowset intervals below).
+- `analysis/case17.py` and `analysis/counterexample.py` — the two timeline figures, from the small Snowset extracts in
+  `data/extracts/` (the same rows as the full trace for those two groups).
 
-Three further scripts re-derive inputs that `paper_numbers.py` summarises; they need the Snowset intervals:
+Three further scripts re-derive inputs that `paper_numbers.py` summarises; they need the full Snowset intervals:
 
 - `analysis/greedy_gap.py` — greedy vs exhaustive search on the 32 groups of 3-4 warehouses (writes `results/greedy_gap.jsonl`);
 - `analysis/mechanism_test.py` — Proposition 1: realised vs predicted saving of every merged warehouse (writes `results/mechanism.jsonl`);
-- `analysis/counterexample.py` — the idle-pair figure (`python3 analysis/counterexample.py 8858239961191194931`).
+- `analysis/greedy_gap_large.py` — exhaustive vs greedy search on the 10 groups of 5-8 warehouses (writes `results/greedy_gap_large.jsonl`).
 
 `icde27_fleet/analyze_f3.py` and `analyze_f4.py` are the analyses as pre-registered; they restrict comparisons to groups
-where every option is feasible, which the paper corrects (see Deviation 7 in `PREREGISTRATION.md`).
+where every option is feasible, which the paper corrects (paper deviation (3); `PREREGISTRATION.md`, Deviation 7). `analysis/pays_v2.py` applies the
+revised definition of "consolidation pays" used in the paper (paper deviation (7); Deviation 8) and prints the table of
+paying groups.
 
 ## Re-run the replay (hours)
 
@@ -62,6 +65,13 @@ Generation 2 warehouses (`sf/setup_warehouses.sql`). Credentials are read from `
 (connection `cdexp`); none are stored here. F1 and F2 ran on schemas `TPCH` and `TPCH10` of a database `CDEXP` holding the
 author's TPC-H-style tables; F2b ran on Snowflake's `SNOWFLAKE_SAMPLE_DATA.TPCH_SF100`. Timings on another account will
 differ; the raw logs and Snowflake's own records from our runs are in `sf/runs/` and `sf/truth/`.
+
+## Pre-registered additions (Addenda 7 and 8, 2026-10-27)
+
+- `icde27_fleet/f7/` — time-split test of the overlap rule: fit on week 1, test on week 2 (`run_split.py`, `analyze_split.py`).
+- `icde27_fleet/f6/` and `icde27_fleet/sf_f6.py` — a real merge on Snowflake: three Snowset windows (high overlap, partial
+  overlap, turn-taking) run separately and merged on nine X-Small warehouses (`sf/setup_f6.sql`). The window scan,
+  selection rule, schedule (`schedule.json`) and predictions were committed before the run.
 
 ## Data
 

@@ -5,10 +5,11 @@ import duckdb, json, sys
 sys.path.insert(0, ROOT); from common.billing import periods
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 plt.rcParams.update({"font.size": 8, "font.family": "serif", "axes.spines.top": False, "axes.spines.right": False, "savefig.bbox": "tight", "savefig.pad_inches": 0.02})
-D = ROOT + "/"; DB = sys.argv[1] if len(sys.argv) > 1 else "6475306747455867502"
+D = ROOT + "/"; DB = sys.argv[1] if len(sys.argv) > 1 else "8858239961191194931"
 con = duckdb.connect()
-whs = [w for (w,) in con.execute(f"select wh from read_parquet('{D}data/snowset_iv/warehouses.parquet') where cast(db as varchar) = ? and n_db = 1 order by wh", [DB]).fetchall()]
-iv = {w: con.execute(f"select s, e from read_parquet('{D}data/snowset_iv/intervals/*/*.parquet', hive_partitioning=true) where wh = ? order by s", [w]).fetchall() for w in whs}
+X = D + "data/extracts/group_%s.parquet" % DB                 # small extract shipped with the repo (same rows as Snowset)
+whs = [w for (w,) in con.execute(f"select distinct wh from read_parquet('{X}') order by wh").fetchall()]
+iv = {w: con.execute(f"select s, e from read_parquet('{X}') where wh = ? order by s", [w]).fetchall() for w in whs}
 print({w: len(v) for w, v in iv.items()})
 t0 = min(v[0][0] for v in iv.values())
 # choose the busiest 12-hour window

@@ -26,12 +26,14 @@ fig.savefig(ROOT + "/paper/figs/f3_savings.pdf")
 x = [FE[r["db"]]["overlap_mean"] for r in ok]
 y = [100 * (1 - r["advisor"] / min(r["size_tuned"], r["suspend_tuned"])) for r in ok]
 fig, ax = plt.subplots(figsize=(3.3, 1.75))
-ax.scatter(x, y, s=7, c=[C[3] if v > 5 else C[0] for v in y], alpha=0.8, linewidths=0)
-ax.axvline(0.547, color=INK, lw=0.7, ls="--"); ax.axhline(5, color="#999999", lw=0.6, ls=":")
-ax.text(0.56, max(y) * 0.92, "overlap > 0.55", fontsize=7); ax.text(0.01, 6.2, "5% threshold", fontsize=6, color="#666666")
+best_ = lambda r: min(r["size_tuned"], r["suspend_tuned"])
+pays_ = [v > 5 and any(len(m) > 1 for m, _, _ in r["advisor_plan"]) and best_(r) - r["advisor"] >= 1 for r, v in zip(ok, y)]  # Deviation 8
+ax.scatter(x, y, s=7, c=[C[3] if p else C[0] for p in pays_], alpha=0.8, linewidths=0)
+ax.axvline(0.617, color=INK, lw=0.7, ls="--"); ax.axhline(5, color="#999999", lw=0.6, ls=":")
+ax.text(0.63, max(y) * 0.92, "overlap > 0.617", fontsize=7); ax.text(0.01, 6.2, "5% threshold", fontsize=6, color="#666666")
 ax.set_xlabel("Mean overlap of members' running periods"); ax.set_ylabel("Extra saving from\nconsolidation (%)")
 ax.set_xlim(-0.02, 1.02); fig.savefig(ROOT + "/paper/figs/f4_overlap.pdf")
-print("n", len(ok), "vals", [round(v, 1) for v in val], "pays", sum(v > 5 for v in y))
+print("n", len(ok), "vals", [round(v, 1) for v in val], "pays", sum(pays_))
 # Fig: per-group saving vs default, suspend-only vs joint search (CDF over groups)
 fig, ax = plt.subplots(figsize=(3.3, 1.6))
 for k, lab_, c in (("suspend_tuned", "Tune auto-suspend", C[0]), ("advisor", "Joint search", C[2])):
