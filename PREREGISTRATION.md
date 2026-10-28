@@ -1,8 +1,8 @@
 # Pre-registration and deviation log
 
 This file is the study plan as written during the work; each addendum and deviation is dated when it was written
-(US Eastern time). The timestamps are the author's own and are mirrored in this repository's git history; they were not
-lodged with an external registry. The file is reproduced verbatim except for 8 short phrases that named a separate study
+(US Eastern time). The timestamps are the author's own and were not lodged with an external registry. The repository
+was published after the study, so its history starts at publication. Addenda 7 and 8 were the exception: they were pushed here (commit acf35de) before F6 or F7 ran. The file is reproduced verbatim except for 8 short phrases that named a separate study
 by the author; those are replaced by text in [square brackets]. The plan was first written for the ICDE Industry &
 Applications track under a working title; Addendum 6 records the change to the Research track (EAB). Addendum 6 also
 maps the paper's numbered deviations (1)-(7) to the dated entries below. Experiment ids: F1 billing validation, F2/F2b

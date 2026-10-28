@@ -19,20 +19,18 @@
 \maketitle
 
 \begin{abstract}
-Cloud data warehouses bill per second while running, with a minimum charge on each resume, so a fleet's bill depends on how
-many warehouses it runs, which workloads share them, their sizes and when they suspend. Practitioners rely on three remedies
----shorter auto-suspend timeouts, resizing, and consolidating warehouses to share idle time---yet no study measures how much
-each saves, or when consolidation pays. We evaluate all three, and a joint search over them, on two weeks of query history
-from Snowflake's public fleet trace: 134 groups of warehouses that serve the same database, 388 warehouses and 18.6 million
-queries, replayed under a billing model that matches Snowflake's actual running periods and running time to within 0.6\%,
-with size scaling measured on Snowflake. Under a 1.2$\times$ latency bound, auto-suspend alone removes 24\% of the billed
-compute (60\% for the median group), assuming every warehouse runs Snowflake's 600-second default; resizing almost never
-pays; and consolidation adds nothing for the median group once suspend is tuned. Where it does pay---21 of 134 groups---it
-cuts the best tuned bill by 5--70\% (median 12\%), and these few groups hold 98\% of the fleet's consolidation saving, 15\% of
-the tuned total; one 17-warehouse group holds two thirds of it, and without that group consolidation adds 5.5\% of the tuned
-total. Contrary to the intuition that merging helps lightly used warehouses share idle time, these are the groups whose
-warehouses run \emph{at the same time}: merged, concurrent running time is billed once. We show why from the billing rule,
-and a rule on the overlap of running periods, computed from query history alone, identifies these groups with a
+Merging cloud data warehouses saves money when their workloads run at the same time, not when they sit idle. Under
+per-second billing, warehouses that run side by side each pay for the seconds they share, and a merged warehouse pays for
+them once; idle time, the usual reason to consolidate, is removed more cheaply by a shorter auto-suspend timeout. We derive
+this from the billing rule and test it on two weeks of Snowflake's public fleet trace: 134 groups of warehouses that serve
+the same database, 388 warehouses and 18.6 million queries, replayed under a billing model checked against Snowflake's own
+records (running time within 0.6\%), with size scaling measured on Snowflake. Under a 1.2$\times$ latency bound,
+auto-suspend alone removes 24\% of the billed compute (60\% for the median group), assuming every warehouse runs the
+600-second default; resizing almost never pays; and consolidation adds nothing for the median group once suspend is tuned.
+Where it does pay---21 of 134 groups---it cuts the best tuned bill by 5--70\% (median 12\%); these groups hold 98\% of the
+fleet's consolidation saving, 15\% of the tuned total, and one 17-warehouse group holds two thirds of it (without it, 5.5\%). Across the 79 same-size merges the search makes,
+the saving predicted from overlap alone matches the replay's to within 0.2\% in total. A rule
+on the overlap of running periods, computed from query history alone, finds the groups where merging pays with a
 leave-one-out balanced accuracy of 0.80. The findings hold across seven sensitivity settings. All code, results,
 calibration logs and the pre-registration are public.
 \end{abstract}
@@ -105,7 +103,8 @@ does not depend on how idle the members are: two idle warehouses that take turns
 nothing, while two busy warehouses that run side by side gain everything they share. Real merges deviate from the
 proposition in two ways, both costs: queries from several members may queue for the merged warehouse's concurrency slots,
 and members of different sizes must move to one rate, usually the largest to keep latency. Figure~\ref{fig:mech} illustrates
-the two extremes. The rest of the paper measures how these forces play out on a real fleet.
+the two extremes. The proposition makes a prediction the rest of the paper tests: on the real fleet, the saving of every
+merge should equal its members' overlap, net of the rate change (Figure~\ref{fig:mtest}, Section~\ref{sec:rq3}).
 
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{figs/mechanism.pdf}
@@ -208,8 +207,10 @@ The group definition, options, latency bound, replay parameters, size-model prot
 sensitivity variants were written down with timestamps before the corresponding runs. Our stated expectation, written
 before any feature was computed, was that consolidation would pay ``when members are lightly used, resume often, have high
 idle-tail share, low overlap, similar size''. The data contradict it on overlap, idle share and size, and resume frequency
-does not matter (Section~\ref{sec:rq3}). The timestamps are the author's own, recorded in the plan and mirrored in the public
-git history; they were not lodged with an external registry. The plan was first written for the industry track under a
+does not matter (Section~\ref{sec:rq3}). The timestamps are the author's own, recorded in the plan; they were not lodged with an
+external registry. The public repository was published after the main study, so its history starts then; the two
+additions after publication (a week-1/week-2 test of the rule and a real merge on Snowflake) were pushed to it before
+they were run. The plan was first written for the industry track under a
 working title; a dated addendum records the change to this track. We disclose seven deviations; the repository maps each to
 its dated entry in the plan. (1)~The analysis keeps the 134 frozen groups although the runner also produced 21 groups after
 dropping size-changing members. (2)~The 5\% threshold for ``pays'' was fixed after the main run; Section~\ref{sec:rq4} shows
@@ -412,7 +413,7 @@ groups.
 \caption{All 21 groups where consolidation pays (a merge, extra saving $>5\%$ and at least one credit saved), ordered by
 credits saved. Sizes in credits per hour;
 best: cheaper of resize-only and suspend-only; joint: joint search (credits, two weeks); share: of the fleet's total
-consolidation saving; overlap: mean overlap of members' running periods; flagged: overlap $>0.62$, the rule of Section~\ref{sec:rq3}; merged: number of
+consolidation saving; overlap: mean overlap of members' running periods; flagged: overlap $>0.617$, the rule of Section~\ref{sec:rq3} (overlap shown to two decimals; row~7 is 0.621); merged: number of
 members in each merged warehouse of the joint plan.}\label{tab:pays}
 \centering\scriptsize
 \setlength{\tabcolsep}{4.2pt}
@@ -506,10 +507,11 @@ Utilisation, min   & $+0.12$ &                      &         \\
 \begin{figure}[t]
 \centering\includegraphics[width=\columnwidth]{figs/f4_overlap.pdf}
 \caption{Extra saving from consolidation over the best single-knob option vs.\ the mean overlap of members' running periods
-(134 groups). Red: groups where consolidation adds more than 5\%.}\label{fig:overlap}
+(134 groups). Red: the 21 groups where consolidation pays (a merge, extra saving $>5\%$, at least one credit). Dashed:
+the rule's threshold, 0.617.}\label{fig:overlap}
 \end{figure}
 
-\textbf{Does the billing argument explain the savings? (exploratory)} Proposition~\ref{prop:merge} predicts the saving of a merge from
+\textbf{Does the billing argument explain the savings? (exploratory)} This closes the argument begun in Figure~\ref{fig:mech}. Proposition~\ref{prop:merge} predicts the saving of a merge from
 coverage alone: the overlap of the members' running periods, valued at the merged warehouse's rate, minus the cost of moving
 members of other sizes to that rate. It ignores queueing, size scaling and resume delays, which the replay includes. For
 each of the 91 merged warehouses in the joint plans we computed both (Figure~\ref{fig:mtest}). For the 79 whose members
@@ -527,13 +529,13 @@ change alone (Proposition~\ref{prop:merge}). Merges with no saving sit at the lo
 \end{figure}
 
 \textbf{A rule.} A depth-2 decision tree, evaluated by leave-one-out cross-validation, splits twice on the same feature and
-so reduces to one rule---\emph{consolidate when mean overlap exceeds about 0.6} (0.62 when fitted on all groups)---with
+so reduces to one rule---\emph{consolidate when mean overlap exceeds about 0.6} (0.617 when fitted on all groups)---with
 balanced accuracy 0.80, precision 0.64 and recall 0.67 (baseline 0.50). A single threshold, also chosen inside each fold,
 lands lower (0.33) and reaches 0.82, but with precision 0.36: overlap above one third is necessary rather than
 sufficient.
 
 \textbf{Where the money is, and what the rule misses (exploratory).} The eight groups with the largest consolidation saving hold 96\% of
-it; five of them have a mean overlap of 1.0 and seven are above 0.62. Scored against the 21 groups where consolidation
+it; five of them have a mean overlap of 1.0 and seven are above 0.617. Scored against the 21 groups where consolidation
 pays, the rule flags 15 correctly; those 15 hold 97.5\% of the fleet's consolidation saving. It misses 6, mostly pairs of
 equal-size warehouses with low overlap (median 0.34) that gain a median 8\% but together account for only 0.6\% of the
 saving. It wrongly flags 7, which gain a median of 0\%; their members differ in size by a median factor of four, so
@@ -668,7 +670,10 @@ but not its pattern. Result-cache and local-cache effects are not modelled; merg
 grid stops at 60\,s.
 
 \textbf{Construct validity.} The billing validation used one X-Small warehouse with sequential probes; it did not exercise
-the 60-second minimum, concurrency, or merging. The ``pays'' threshold was set after the main run (we report 3\% and 10\%).
+concurrency or merging. The 60-second minimum cannot bind in any option we evaluate: every option uses \autos{}
+$\ge 60$\,s, so every running period lasts at least 60\,s (Section~\ref{sec:billing}). The replay still applies the
+minimum, and the unit tests check it on 200 random workloads, binding below 60\,s and never at or above
+(\texttt{tests/test\_advisor.py}). The ``pays'' threshold was set after the main run (we report 3\% and 10\%).
 The rule rests on 134 groups with 21 positives, and most of the saving sits in two groups; it should be read as a filter
 for where to look, validated by a replay, not as a classifier to act on alone.
 
