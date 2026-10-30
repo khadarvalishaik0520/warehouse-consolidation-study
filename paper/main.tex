@@ -14,7 +14,10 @@
 
 % AUTHOR LIST: names, affiliations and ORCIDs are required at submission; a CMT profile is required for every author.
 \author{\IEEEauthorblockN{Khadarvali Shaik}
-\IEEEauthorblockA{[Affiliation -- non-academic]\\Richmond, VA, USA\\khadarvali.shaik@ieee.org}}
+\IEEEauthorblockA{Independent Researcher\\Richmond, VA, USA\\khadarvali.shaik@ieee.org}
+\and
+\IEEEauthorblockN{Syam Sajit Dondapati}
+\IEEEauthorblockA{American International Group\\New York, USA\\dsyam22@gmail.com}}
 
 \maketitle
 
@@ -210,7 +213,7 @@ The group definition, options, latency bound, replay parameters, size-model prot
 sensitivity variants were written down with timestamps before the corresponding runs. Our stated expectation, written
 before any feature was computed, was that consolidation would pay ``when members are lightly used, resume often, have high
 idle-tail share, low overlap, similar size''. The data contradict it on overlap, idle share and size, and resume frequency
-does not matter (Section~\ref{sec:rq3}). The timestamps are the author's own, recorded in the plan; they were not lodged with an
+does not matter (Section~\ref{sec:rq3}). The timestamps are the authors' own, recorded in the plan; they were not lodged with an
 external registry. The public repository was published after the main study, so its history starts then; the two
 additions after publication (a week-1/week-2 test of the rule and a real merge on Snowflake) were pushed to it before
 they were run. The plan was first written for the industry track under a
@@ -279,7 +282,7 @@ seconds; start relative to the phase's first resume.}\label{tab:f1}
 \end{table}
 
 \subsection{How does run time scale with size?}
-On a second dedicated Generation~2 warehouse (query acceleration off) we ran 12 statements on the author's TPC-H-style
+On a second dedicated Generation~2 warehouse (query acceleration off) we ran 12 statements on our own TPC-H-style
 schema and 6 TPC-H statements on Snowflake's SF100 sample data at X-Small, Small and Medium, in ABBA order (XS, S, M, M, S,
 XS), three repetitions each with the first after every resize discarded, and took execution times from Snowflake's own
 records. For each statement and larger size, $\alpha = \log(t_{XS}/t_{s})/\log(s)$; $\alpha$ for a class is the median over
@@ -735,8 +738,8 @@ groups.
 
 \section*{Acknowledgment}
 AI-generated content: Claude (Anthropic) was used to draft and edit the text of all sections, to write the replay, search
-and analysis code behind Sections~IV--VI and the SQL in Figure~\ref{lst:overlap}, and to produce all figures and tables. The author directed the study and ran the
-experiments; every reported number was re-computed from the result files, and the author takes full responsibility for
+and analysis code behind Sections~IV--VI and the SQL in Figure~\ref{lst:overlap}, and to produce all figures and tables. The authors directed the study and the first author ran the
+experiments; every reported number was re-computed from the result files, and the authors take full responsibility for
 the content.
 
 \bibliographystyle{IEEEtran}
